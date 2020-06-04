@@ -1,0 +1,38 @@
+stages:
+  - .pre
+  - build
+
+before_script:
+  # set global env values
+  - export $(cat gitversion.properties | sed 's/#.*//g' | xargs)
+
+👀 version:
+  stage: .pre
+  image:
+    name: gittools/gitversion:5.3.5-linux-alpine.3.10-x64-netcoreapp2.1
+    entrypoint: []
+  before_script: []
+  script:
+    - /tools/dotnet-gitversion /output buildserver
+    - cat gitversion.properties
+  artifacts:
+    paths: [gitversion.properties]
+    expire_in: 1 hr
+
+📦 build:
+  stage: build
+  image: docker:18.09.7-dind
+  services:
+    - docker:18.09.7-dind
+  script:
+    # print version to log
+    - echo $GitVersion_InformationalVersion
+    # build image
+    - docker build
+      --pull
+      -t "${CONTAINER_IMAGE}"
+      #pass version to image
+      --build-arg BUILD_VERSION=$GitVersion_InformationalVersion
+      -f GitVersion2307/Dockerfile
+      .
+    - docker push ${CONTAINER_IMAGE}
