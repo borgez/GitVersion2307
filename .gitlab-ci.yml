@@ -31,7 +31,10 @@ before_script:
     - docker build
       --pull
       -t "${CONTAINER_IMAGE}"
-      #pass version to image
+      # pass version to image
+      # want to transfer json or gitversion.properties, from build context or variable is not important
+      # but not .git itself
+      # and build context not have build tools at all, only docker...
       --build-arg BUILD_VERSION=$GitVersion_InformationalVersion
       -f GitVersion2307/Dockerfile
       .
